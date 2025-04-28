@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>System Spares</title>
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-dark: #3a56d4;
+      --secondary: #3f37c9;
+      --dark: #1a1b41;
+      --light: #f8f9fa;
+      --danger: #ef476f;
+      --success: #06d6a0;
+      --warning: #ffd166;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light);
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--dark), var(--secondary));
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem;
+      background-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    select, button {
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background-color: white;
+      transition: all 0.2s ease;
+    }
+    
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(67, 97, 238, 0.3);
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(67, 97, 238, 0.4);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background-color: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+      height: 180px;
+      width: 100%;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .product-card img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .product-card h3 {
+      font-size: 1.4rem;
+      margin: 0.8rem 0;
+      color: var(--dark);
+    }
+
+    .product-card p {
+      margin: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+    
+    .product-price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0.8rem 0;
+    }
+    
+    .product-meta {
+      margin-top: auto;
+    }
+    
+    .cart-btn {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+    }
+    
+    .empty-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem;
+      font-size: 1.2rem;
+      color: #555;
+    }
+    
+    @media (max-width: 768px) {
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      select, button {
+        width: 100%;
+      }
+      
+      .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        padding: 1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .product-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: auto;
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .close {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .ok-btn {
+      background-color: #633e00;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    
+    .order-message {
+      display: none;
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    /* ─── Cart Sidebar Styles ─────────────────────────────────────────── */
+#cartSidebar {
+  position: fixed;
+  top: 0; right: 0;
+  width: 400px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+}
+#cartSidebar.open {
+  transform: translateX(0);
+}
+.cart-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.cart-header h2 { margin: 0; }
+.close-sidebar {
+  color: black;  background: none; border: none; font-size: 1.5rem; cursor: pointer;
+}
+#cartItems {
+  flex: 1; overflow-y: auto; padding: 1rem;
+}
+#cartFooter {
+  padding: 1rem; border-top: 1px solid #eee; text-align: center;
+}
+#cartFooter button {
+  
+  margin-left: 1rem;
+  margin-top: 0.5rem; padding: 0.6rem 1.2rem; font-weight: bold;
+}
+/* ───────────────────────────────────────────────────────────────── */
+
+    
+    
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🖥️ System Spares</h1>
+    <p>Quality computer components for every system build</p>
+  </div>
+  
+
+
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="brandSelect">Brand:</label>
+      <select id="brandSelect">
+        <option value="">Any Brand</option>
+        <option value="Lenovo">Lenovo</option>
+        <option value="Dell">Dell</option>
+        <option value="HP">HP</option>
+        <option value="Asus">Asus</option>
+        <option value="Acer">Acer</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="typeSelect">Product Type:</label>
+      <select id="typeSelect">
+        <option value="">Any Type</option>
+        <option value="Motherboard">Motherboard</option>
+        <option value="RAM">RAM</option>
+        <option value="CPU">CPU</option>
+        <option value="Keyboard">Keyboard</option>
+        <option value="Mouse">Mouse</option>
+        <option value="Harddisk">Hard Disk</option>
+      </select>
+    </div>
+
+    <button onclick="filterProducts()">Search</button>
+    <button onclick="showcart()">Cart Items</button>
+  </div>
+  <div id="cart-display" style="margin-top: 20px;"></div>
+
+  <div class="product-grid" id="container">
+    <!-- Cards will be injected here -->
+  </div>
+  <div id="cartModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+    <img id="modalImg" src="" alt="Product Image" style="width: 100%; height: auto; margin-bottom: 15px; border-radius: 10px;">
+    <div id="modalText"></div>
+    <button onclick="placeOrder()" class="ok-btn">OK</button>
+  </div>
+    </div>
+  </div>
+
+  
+  <div id="cartSidebar">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="close-sidebar" onclick="toggleCart()">×</button>
+    </div>
+    <div id="cartItems" style="padding: 20px; background: #f9f9f9; border-radius: 10px; margin-top: 20px;"></div>
+    <div id="cartFooter">
+      <strong>Total: ₹<span id="cartTotal">0.00</span></strong>
+      <!-- <button onclick="checkout()">Checkout</button> -->
+      <button >Checkout</button>
+    </div>
+  </div>
+  
+  
+ 
+
+
+  
+  
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+      
+    const products = [
+    { brand: "Lenovo", type: "Motherboard", name: "Lenovo Motherboard", image: "https://tse3.mm.bing.net/th?id=OIP.66FH1WsOlvQTB15AYrkVtgHaE-&pid=Api&P=0&h=180", price: "599.99" },
+      { brand: "Asus", type: "keyboard", name: "Asus Keyboard", image: "https://tse4.mm.bing.net/th?id=OIP.pEh1tfK_292goCQTLlk-QAHaGF&pid=Api&P=0&h=180", price: "299" },
+      { brand: "HP", type: "Harddisk", name: "HP Harddisk", image: "https://tse3.mm.bing.net/th?id=OIP.6I9Q0qXU01r5fcVH_FBYqgHaFq&pid=Api&P=0&h=180", price: "2000" },
+      { brand: "Dell", type: "CPU", name: "Dell CPU", image: "https://tse3.mm.bing.net/th?id=OIP.N6ELxBy9EKH4SmninUdfhwHaGD&pid=Api&P=0&h=180", price: "5000" },
+      { brand: "Acer", type: "Mouse", name: "Acer Mouse", image: "https://tse4.mm.bing.net/th?id=OIP.JzEPeajMIhpNiZKUvOHXnQHaEi&pid=Api&P=0&h=180", price: "200" },
+      { brand: "Lenovo", type: "RAM", name: "Lenovo RAM", image: "https://tse4.mm.bing.net/th?id=OIP.6RJgaCAbn6556M3yCg5nZQHaEB&pid=Api&P=0&h=180", price: "4000" },
+    ];
+
+    function filterProducts() {
+      const brand = document.getElementById("brandSelect").value;
+      const type = document.getElementById("typeSelect").value;
+
+      const filtered = products.filter(p => 
+        (!brand || p.brand === brand) &&
+        (!type || p.type === type)
+      );
+
+      const container = document.getElementById("container");
+      
+      if (filtered.length) {
+        container.innerHTML = filtered.map((p,index) => `
+          <div class="product-card">
+            <div class="product-image">
+              <img src="${p.image}" alt="${p.name}">
+            </div>
+            <h3>${p.name}</h3>
+            <div class="product-meta">
+              <p>Type: ${p.type}</p>
+              <p>Brand: ${p.brand}</p>
+              <p class="product-price">₹${p.price}</p>
+               <label>Quantity:
+        <input type="number" id="qty-${index}" value="1" min="1" style="width: 50px; margin-left: 5px;">
+      </label>
+      <button class="addToCart" onclick="addToCart('${p.name}', ${p.price}, '${p.image}', ${index})">Add to Cart</button>
+             
+          </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `<div class="empty-results">No products match your selection. Try different filters.</div>`;
+      }
+    }
+   
+   
+
+    const cart = []; // Array to hold multiple cart items
+    let currentProduct;
+
+    function addToCart(productName, price, imageUrl, index) {
+      const quantity = parseInt(document.getElementById(`qty-${index}`).value) || 1;
+      const totalPrice = price * quantity;
+    
+      // Set modal content with the selected product
+      document.getElementById("modalImg").src = imageUrl;
+      document.getElementById("modalText").innerHTML = `
+        <strong>Product:</strong> ${productName}<br>
+        <strong>Quantity:</strong> ${quantity}<br>
+        <strong>Price:</strong> ₹${price.toFixed(2)}<br>
+        <strong>Total:</strong> ₹${totalPrice.toFixed(2)}
+      `;
+    
+      // Save this product temporarily
+      currentProduct = {
+        name: productName,
+        price: price,
+        image: imageUrl,
+        quantity: quantity,
+        total: totalPrice
+      };
+    
+      document.getElementById("cartModal").style.display = "block";
+    }
+    
+    function placeOrder() {
+      // Push current selected product into cart array
+      cart.push(currentProduct);
+    
+      // Re-render cart items
+      renderCartItems();
+    
+      closeModal();
+    }
+    function toggleCart() {
+      document.getElementById('cartSidebar').classList.toggle('open');
+    }
+    
+    
+    function renderCartItems() {
+      const list = document.getElementById("cartItems");
+      list.innerHTML = "";
+      let grandTotal = 0;
+    
+      if (cart.length === 0) {
+        list.innerHTML = "<p>Your cart is empty.</p>";
+        document.getElementById("cartTotal").innerText = "0.00";
+        return;
+      }
+    
+      cart.forEach((item, idx) => {
+        // calculate line total
+        const lineTotal = item.quantity * item.price;
+        grandTotal += lineTotal;
+    
+        // create the container
+        const row = document.createElement("div");
+        row.className = "cart-item";
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.justifyContent = "space-between";
+        row.style.padding = "8px 0";
+        row.style.borderBottom = "1px solid #eee";
+    
+        row.innerHTML = `
+          <div style="display:flex; align-items:center; flex:1">
+            <img src="${item.image}" alt="${item.name}" 
+                 style="width:60px; height:60px; object-fit:cover; border-radius:4px; margin-right:12px;">
+            <div>
+              <div id="proname" style="font-weight:600; margin-bottom:4px;">${item.name}</div>
+              <div id="proprice" style="font-size:0.9em; color:#555;">₹${item.price.toFixed(2)} each</div>
+            </div>
+          </div>
+    
+          <div style="flex-shrink:0; text-align:center;">
+            <button onclick="updateQuantity(${idx}, ${item.quantity - 1})" 
+                    style="margin-right:4px;">–</button>
+            <span id="proqty">${item.quantity}</span>
+            <button onclick="updateQuantity(${idx}, ${item.quantity + 1})" 
+                    style="margin-left:4px;">+</button>
+          </div>
+    
+          <div style="flex-shrink:0; text-align:right; margin-left:12px;">
+            <div><strong>₹${lineTotal.toFixed(2)}</strong></div>
+            <a href="#" onclick="removeItem(${idx}); return false;" 
+               style="display:block; font-size:0.8em; color:#c00; margin-top:4px;">Delete</a>
+          </div>
+        `;
+    
+        list.appendChild(row);
+      });
+    
+      document.getElementById("cartTotal").innerText = grandTotal.toFixed(2);
+    }
+    
+    // Remove an item from cart by index
+    function removeItem(index) {
+      cart.splice(index, 1);
+      renderCartItems();
+    }
+    
+    // Change quantity (will remove if qty ≤ 0)
+    function updateQuantity(index, newQty) {
+      if (newQty < 1) {
+        // If they clicked “–” down to zero, just remove the item
+        removeItem(index);
+      } else {
+        cart[index].quantity = newQty;
+        renderCartItems();
+      }
+    }
+    
+    
+    function closeModal() {
+      document.getElementById("cartModal").style.display = "none";
+    }
+    function showcart() {
+      renderCartItems();
+      toggleCart();
+    }
+    
+window.onload = filterProducts;
+
+
+      
+   
+   
+  </script>
+
+  <script type="text/javascript"> 
+    emailjs.init('52BOFZv0j_jSzndOl');
+</script>
+
+<script>
+    function checkout() {
+        let orderItems = [];
+        let totalPrice = 0;
+
+        document.querySelectorAll('#cartItems .cart-item').forEach((item, index) => {
+            const name = item.querySelector('#proname').innerText.trim(); // Product Name
+            console.log(name)
+            const priceText = item.querySelector('#proprice').innerText.trim(); // Price Text like "₹599.99 each"
+            console.log(priceText)
+            const priceMatch = priceText.match(/₹([0-9.]+)/);
+            console.log(priceMatch)
+            const price = priceMatch ? parseFloat(priceMatch[1]) : 0; // Extract numeric price
+
+            const quantityText = item.querySelector('#proqty').innerText.trim(); // Quantity Text
+            const quantity = parseInt(quantityText);
+            console.log(quantity)
+            const totalItemPrice = price * quantity;
+            console.log(totalItemPrice)
+
+            orderItems.push({
+                name: name,
+                units: quantity,
+                price: totalItemPrice.toFixed(2),
+            });
+
+            totalPrice += totalItemPrice;
+        });
+
+        const shipping = "Free"; 
+        const tax = "0.00";
+        const totalFormatted = totalPrice.toFixed(2);
+        const order_id = Math.floor(Math.random() * 1000000); // Random Order ID
+        const email = "sharshada2402@gmail.com"; 
+
+        // Send Email via EmailJS
+        emailjs.send("service_xtju5yd", "template_p2emjrl", {
+            order_id: order_id,
+            orders: orderItems,
+            email: email,
+            cost: {
+                shipping: shipping,
+                tax: tax,
+                total: totalFormatted
+            }
+        }).then(function (response) {
+            console.log('SUCCESS!', response.status, response.text);
+        }, function (error) {
+            console.log('FAILED...', error);
+        }); 
+    }
+</script>
+
+</body>
+</html>
