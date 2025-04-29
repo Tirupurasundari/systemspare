@@ -371,7 +371,7 @@
     <div id="cartFooter">
       <strong>Total: ₹<span id="cartTotal">0.00</span></strong>
       <button onclick="checkout()">Checkout</button>
-<!--       <button >Checkout</button> -->
+     
     </div>
   </div>
   
@@ -380,11 +380,15 @@
 
 
   
-  
-
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script type="text/javascript">
+
+    <script type="text/javascript">
+        emailjs.init('52BOFZv0j_jSzndOl')
+    </script>
       
+
+ <script>
+  
     const products = [
     { brand: "Lenovo", type: "Motherboard", name: "Lenovo Motherboard", image: "https://tse3.mm.bing.net/th?id=OIP.66FH1WsOlvQTB15AYrkVtgHaE-&pid=Api&P=0&h=180", price: "599.99" },
       { brand: "Asus", type: "keyboard", name: "Asus Keyboard", image: "https://tse4.mm.bing.net/th?id=OIP.pEh1tfK_292goCQTLlk-QAHaGF&pid=Api&P=0&h=180", price: "299" },
@@ -559,67 +563,64 @@
 window.onload = filterProducts;
 
 
-      
+
+function checkout() {
+  let orderItems = [];
+  let totalPrice = 0;
+
+  document.querySelectorAll('#cartItems .cart-item').forEach((item, index) => {
+      const name = item.querySelector('#proname').innerText.trim(); // Product Name
+      console.log(name)
+      const priceText = item.querySelector('#proprice').innerText.trim(); // Price Text like "₹599.99 each"
+      console.log(priceText)
+      const priceMatch = priceText.match(/₹([0-9.]+)/);
+      console.log(priceMatch)
+      const price = priceMatch ? parseFloat(priceMatch[1]) : 0; // Extract numeric price
+
+      const quantityText = item.querySelector('#proqty').innerText.trim(); // Quantity Text
+      const quantity = parseInt(quantityText);
+      console.log(quantity)
+      const totalItemPrice = price * quantity;
+      console.log(totalItemPrice)
+
+      orderItems.push({
+          name: name,
+          units: quantity,
+          price: totalItemPrice.toFixed(2),
+      });
+
+      totalPrice += totalItemPrice;
+  });
+
+  const shipping = "Free"; 
+  const tax = "0.00";
+  const totalFormatted = totalPrice.toFixed(2);
+  const order_id = Math.floor(Math.random() * 1000000); // Random Order ID
+  const email = "sakainfosys0503@gmail.com"; 
+
+  // Send Email via EmailJS
+  emailjs.send("service_xtju5yd", "template_p2emjrl", {
+      order_id: order_id,
+      orders: orderItems,
+      email: email,
+      cost: {
+          shipping: shipping,
+          tax: tax,
+          total: totalFormatted
+      }
+  }).then(function (response) {
+      console.log('SUCCESS!', response.status, response.text);
+      alert('Order placed successfully! Email sent.');
+  }, function (error) {
+      console.log('FAILED...', error);
+      alert('Failed to send order email. Please try again.');
+  }); 
+}
+
+
+
    
-   
-  </script>
-
-  <script type="text/javascript"> 
-    emailjs.init('52BOFZv0j_jSzndOl');
 </script>
-
-<script>
-    function checkout() {
-        let orderItems = [];
-        let totalPrice = 0;
-
-        document.querySelectorAll('#cartItems .cart-item').forEach((item, index) => {
-            const name = item.querySelector('#proname').innerText.trim(); // Product Name
-            console.log(name)
-            const priceText = item.querySelector('#proprice').innerText.trim(); // Price Text like "₹599.99 each"
-            console.log(priceText)
-            const priceMatch = priceText.match(/₹([0-9.]+)/);
-            console.log(priceMatch)
-            const price = priceMatch ? parseFloat(priceMatch[1]) : 0; // Extract numeric price
-
-            const quantityText = item.querySelector('#proqty').innerText.trim(); // Quantity Text
-            const quantity = parseInt(quantityText);
-            console.log(quantity)
-            const totalItemPrice = price * quantity;
-            console.log(totalItemPrice)
-
-            orderItems.push({
-                name: name,
-                units: quantity,
-                price: totalItemPrice.toFixed(2),
-            });
-
-            totalPrice += totalItemPrice;
-        });
-
-        const shipping = "Free"; 
-        const tax = "0.00";
-        const totalFormatted = totalPrice.toFixed(2);
-        const order_id = Math.floor(Math.random() * 1000000); // Random Order ID
-        const email = "sharshada2402@gmail.com"; 
-
-        // Send Email via EmailJS
-        emailjs.send("service_xtju5yd", "template_p2emjrl", {
-            order_id: order_id,
-            orders: orderItems,
-            email: email,
-            cost: {
-                shipping: shipping,
-                tax: tax,
-                total: totalFormatted
-            }
-        }).then(function (response) {
-            console.log('SUCCESS!', response.status, response.text);
-        }, function (error) {
-            console.log('FAILED...', error);
-        }); 
-    }
-</script>
-
+ 
 </body>
 </html>
